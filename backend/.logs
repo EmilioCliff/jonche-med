@@ -1,0 +1,32 @@
+2025/10/02 12:23:17 Running in interactive mode.
+2025/10/02 12:23:30 Initializing project .
+2025/10/02 12:23:30 Creating directory: /home/emilio-cliff/jonche-med/backend/cmd
+2025/10/02 12:23:30 Creating directory: /home/emilio-cliff/jonche-med/backend/cmd/server
+2025/10/02 12:23:30 Creating file: /home/emilio-cliff/jonche-med/backend/cmd/server/main.go
+2025/10/02 12:23:30 Creating directory: /home/emilio-cliff/jonche-med/backend/cmd/cli
+2025/10/02 12:23:30 Creating file: /home/emilio-cliff/jonche-med/backend/cmd/cli/main.go
+2025/10/02 12:23:30 Creating directory: /home/emilio-cliff/jonche-med/backend/pkg
+2025/10/02 12:23:30 Creating file: /home/emilio-cliff/jonche-med/backend/pkg/errors.go
+2025/10/02 12:23:30 Creating directory: /home/emilio-cliff/jonche-med/backend/.envs
+2025/10/02 12:23:30 Creating directory: /home/emilio-cliff/jonche-med/backend/.envs/.local
+2025/10/02 12:23:30 Creating file: /home/emilio-cliff/jonche-med/backend/.envs/.local/config.env
+2025/10/02 12:23:30 Creating directory: /home/emilio-cliff/jonche-med/backend/.envs/configs
+2025/10/02 12:23:30 Creating file: /home/emilio-cliff/jonche-med/backend/.envs/configs/sqlc.yaml
+2025/10/02 12:23:30 Creating directory: /home/emilio-cliff/jonche-med/backend/internal
+2025/10/02 12:23:30 Creating empty directory: /home/emilio-cliff/jonche-med/backend/internal/handlers
+2025/10/02 12:23:30 Creating empty directory: /home/emilio-cliff/jonche-med/backend/internal/repository
+2025/10/02 12:23:30 Creating empty directory: /home/emilio-cliff/jonche-med/backend/internal/mock
+2025/10/02 12:23:30 Creating empty directory: /home/emilio-cliff/jonche-med/backend/internal/services
+2025/10/02 12:23:30 Creating directory: /home/emilio-cliff/jonche-med/backend/internal/postgres
+2025/10/02 12:23:30 Creating empty directory: /home/emilio-cliff/jonche-med/backend/internal/postgres/generated
+2025/10/02 12:23:30 Creating empty directory: /home/emilio-cliff/jonche-med/backend/internal/postgres/migrations
+2025/10/02 12:23:30 Creating empty directory: /home/emilio-cliff/jonche-med/backend/internal/postgres/queries
+2025/10/02 12:23:30 Creating empty directory: /home/emilio-cliff/jonche-med/backend/internal/postgres/mock
+2025/10/02 12:23:30 Creating file: /home/emilio-cliff/jonche-med/backend/README.md
+2025/10/02 12:23:30 Creating file: /home/emilio-cliff/jonche-med/backend/.gitignore
+2025/10/02 12:23:30 Creating file: /home/emilio-cliff/jonche-med/backend/Makefile
+2025/10/02 12:23:30 Creating directory: /home/emilio-cliff/jonche-med/backend/.github
+2025/10/02 12:23:30 Creating directory: /home/emilio-cliff/jonche-med/backend/.github/workflows
+2025/10/02 12:23:30 Creating file: /home/emilio-cliff/jonche-med/backend/.github/workflows/ci.yml
+2025/10/02 12:23:30 Creating file: /home/emilio-cliff/jonche-med/backend/Dockerfile
+2025/10/02 12:23:30 Initializing go module...
