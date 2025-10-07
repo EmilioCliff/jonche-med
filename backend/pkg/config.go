@@ -21,6 +21,7 @@ type Config struct {
 	TOKEN_DURATION          time.Duration `mapstructure:"TOKEN_DURATION"`
 	TOKEN_SYMMETRIC_KEY     string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
 	TOKEN_ISSUER            string        `mapstructure:"TOKEN_ISSUER"`
+	DEFAULT_USER_PASSWORD   string        `mapstructure:"DEFAULT_USER_PASSWORD"`
 }
 
 func LoadConfig(path string) (Config, error) {
@@ -58,4 +59,5 @@ func setDefaults() {
 	viper.SetDefault("TOKEN_DURATION", 0)
 	viper.SetDefault("TOKEN_SYMMETRIC_KEY", "")
 	viper.SetDefault("TOKEN_ISSUER", "")
+	viper.SetDefault("DEFAULT_USER_PASSWORD", "")
 }

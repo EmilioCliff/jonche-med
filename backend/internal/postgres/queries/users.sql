@@ -15,6 +15,7 @@ SET name = coalesce(sqlc.narg('name'), name),
     email = coalesce(sqlc.narg('email'), email),
     phone_number = coalesce(sqlc.narg('phone_number'), phone_number),
     role = coalesce(sqlc.narg('role'), role),
+    refresh_token = coalesce(sqlc.narg('refresh_token'), refresh_token),
     password = coalesce(sqlc.narg('password'), password)
 WHERE id = sqlc.arg('id')
 RETURNING *;

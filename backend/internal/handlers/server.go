@@ -56,17 +56,43 @@ func NewServer(config pkg.Config, tokenMaker pkg.JWTMaker, repo *postgres.Postgr
 func (s *Server) setUpRoutes() {
 	s.router.Use(CORSmiddleware(s.config.FRONTEND_URL))
 
-	_ = s.router.Group("/api/v1")
+	v1 := s.router.Group("/api/v1")
 	v1Auth := s.router.Group("/api/v1")
+	v1cache := s.router.Group("/api/v1")
 
 	// protected routes
 	authRoute := v1Auth.Use(authMiddleware(s.tokenMaker))
 
 	// cached routes
-	_ = authRoute.Use(redisCacheMiddleware(s.cache))
+	cacheRoute := v1cache.Use(authMiddleware(s.tokenMaker), redisCacheMiddleware(s.cache))
 
 	// health check
-	s.router.GET("/health-check", s.healthCheckHandler)
+	v1.GET("/health-check", s.healthCheckHandler)
+
+	// users routes
+	authRoute.POST("/users", s.createUserHandler)
+	cacheRoute.GET("/users/:id", s.getUserHandler)
+	authRoute.PUT("/users/:id", s.updateUserHandler)
+	authRoute.DELETE("/users/:id", s.deleteUserHandler)
+	cacheRoute.GET("/users", s.listUsersHandler)
+
+	v1.POST("/users/login", s.loginUserHandler)
+	v1.GET("/users/logout", s.logoutUserHandler)
+	v1.GET("/users/refresh-token", s.refreshTokenHandler)
+	authRoute.POST("/users/:id/change-password", s.changePasswordHandler)
+
+	// products routes
+	authRoute.POST("/products", s.createProductHandler)
+	authRoute.PUT("/products/:id", s.updateProductHandler)
+	authRoute.DELETE("/products/:id", s.deleteProductHandler)
+	cacheRoute.GET("/products", s.listProductsHandler)
+
+	authRoute.POST("/products/:id/add-stock", s.addProductStockHandler)
+	authRoute.POST("/products/:id/remove-stock", s.removeProductStockHandler)
+	cacheRoute.GET("/products/movements", s.listProductMovementsHandler)
+	cacheRoute.GET("/stats", s.getStatsHandler)
+
+	// reports routes
 
 	s.srv = &http.Server{
 		Addr:         s.config.SERVER_ADDRESS,

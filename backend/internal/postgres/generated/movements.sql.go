@@ -7,6 +7,7 @@ package generated
 
 import (
 	"context"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -70,7 +71,94 @@ func (q *Queries) GetMovementByID(ctx context.Context, id int64) (Movement, erro
 }
 
 const listMovements = `-- name: ListMovements :many
-SELECT id, product_id, quantity, price, type, note, performed_by, created_at FROM movements
+SELECT 
+    m.id, m.product_id, m.quantity, m.price, m.type, m.note, m.performed_by, m.created_at,
+    p.name AS product_name,
+    u.name AS user_name
+FROM movements AS m
+JOIN products AS p ON p.id = m.product_id
+JOIN users AS u ON u.id = m.performed_by
+WHERE 
+    (
+        $1::bigint IS NULL 
+        OR m.product_id = $1
+    )
+    AND (
+        $2::text IS NULL 
+        OR m.type = $2
+    )
+    AND (
+        $3::timestamptz IS NULL
+        OR m.created_at BETWEEN $3::timestamptz 
+            AND COALESCE($4::timestamptz, now())
+    )
+ORDER BY m.created_at DESC
+LIMIT $6 OFFSET $5
+`
+
+type ListMovementsParams struct {
+	ProductID pgtype.Int8        `json:"product_id"`
+	Type      pgtype.Text        `json:"type"`
+	StartDate pgtype.Timestamptz `json:"start_date"`
+	EndDate   pgtype.Timestamptz `json:"end_date"`
+	Offset    int32              `json:"offset"`
+	Limit     int32              `json:"limit"`
+}
+
+type ListMovementsRow struct {
+	ID          int64          `json:"id"`
+	ProductID   int64          `json:"product_id"`
+	Quantity    int32          `json:"quantity"`
+	Price       pgtype.Numeric `json:"price"`
+	Type        string         `json:"type"`
+	Note        pgtype.Text    `json:"note"`
+	PerformedBy int64          `json:"performed_by"`
+	CreatedAt   time.Time      `json:"created_at"`
+	ProductName string         `json:"product_name"`
+	UserName    string         `json:"user_name"`
+}
+
+func (q *Queries) ListMovements(ctx context.Context, arg ListMovementsParams) ([]ListMovementsRow, error) {
+	rows, err := q.db.Query(ctx, listMovements,
+		arg.ProductID,
+		arg.Type,
+		arg.StartDate,
+		arg.EndDate,
+		arg.Offset,
+		arg.Limit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListMovementsRow{}
+	for rows.Next() {
+		var i ListMovementsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProductID,
+			&i.Quantity,
+			&i.Price,
+			&i.Type,
+			&i.Note,
+			&i.PerformedBy,
+			&i.CreatedAt,
+			&i.ProductName,
+			&i.UserName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listMovementsCount = `-- name: ListMovementsCount :one
+SELECT COUNT(*) AS total_movements 
+FROM movements
 WHERE 
     (
         $1::bigint IS NULL 
@@ -84,51 +172,23 @@ WHERE
         $3::timestamptz IS NULL
         OR created_at BETWEEN $3::timestamptz AND COALESCE($4::timestamptz, now())
     )
-ORDER BY created_at DESC
-LIMIT $6 OFFSET $5
 `
 
-type ListMovementsParams struct {
+type ListMovementsCountParams struct {
 	ProductID pgtype.Int8        `json:"product_id"`
 	Type      pgtype.Text        `json:"type"`
 	StartDate pgtype.Timestamptz `json:"start_date"`
 	EndDate   pgtype.Timestamptz `json:"end_date"`
-	Offset    int32              `json:"offset"`
-	Limit     int32              `json:"limit"`
 }
 
-func (q *Queries) ListMovements(ctx context.Context, arg ListMovementsParams) ([]Movement, error) {
-	rows, err := q.db.Query(ctx, listMovements,
+func (q *Queries) ListMovementsCount(ctx context.Context, arg ListMovementsCountParams) (int64, error) {
+	row := q.db.QueryRow(ctx, listMovementsCount,
 		arg.ProductID,
 		arg.Type,
 		arg.StartDate,
 		arg.EndDate,
-		arg.Offset,
-		arg.Limit,
 	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Movement{}
-	for rows.Next() {
-		var i Movement
-		if err := rows.Scan(
-			&i.ID,
-			&i.ProductID,
-			&i.Quantity,
-			&i.Price,
-			&i.Type,
-			&i.Note,
-			&i.PerformedBy,
-			&i.CreatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+	var total_movements int64
+	err := row.Scan(&total_movements)
+	return total_movements, err
 }

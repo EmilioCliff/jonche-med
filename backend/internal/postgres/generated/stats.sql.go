@@ -12,7 +12,7 @@ import (
 )
 
 const getStats = `-- name: GetStats :one
-SELECT id, total_products, total_low_stock, total_out_of_stock, total_stocks_added, total_stocks_removed, total_users, total_value FROM stats
+SELECT id, total_users, total_products, total_low_stock, total_out_of_stock, total_stocks_added, total_stocks_added_value, total_stocks_removed, total_stocks_removed_value, total_value FROM stats
 WHERE id = 1
 `
 
@@ -21,15 +21,36 @@ func (q *Queries) GetStats(ctx context.Context) (Stat, error) {
 	var i Stat
 	err := row.Scan(
 		&i.ID,
+		&i.TotalUsers,
 		&i.TotalProducts,
 		&i.TotalLowStock,
 		&i.TotalOutOfStock,
 		&i.TotalStocksAdded,
+		&i.TotalStocksAddedValue,
 		&i.TotalStocksRemoved,
-		&i.TotalUsers,
+		&i.TotalStocksRemovedValue,
 		&i.TotalValue,
 	)
 	return i, err
+}
+
+const recalculateStatsStock = `-- name: RecalculateStatsStock :exec
+UPDATE stats
+SET
+    total_low_stock = subquery.low_stock,
+    total_out_of_stock = subquery.out_of_stock
+FROM (
+    SELECT
+        COUNT(*) FILTER (WHERE stock > 0 AND stock <= low_stock_threshold AND deleted = false) AS low_stock,
+        COUNT(*) FILTER (WHERE stock <= 0 AND deleted = false) AS out_of_stock
+    FROM products
+) AS subquery
+WHERE stats.id = 1
+`
+
+func (q *Queries) RecalculateStatsStock(ctx context.Context) error {
+	_, err := q.db.Exec(ctx, recalculateStatsStock)
+	return err
 }
 
 const updateStats = `-- name: UpdateStats :one
@@ -39,21 +60,24 @@ SET total_users = coalesce($1, total_users),
     total_low_stock = coalesce($3, total_low_stock),
     total_out_of_stock = coalesce($4, total_out_of_stock),
     total_stocks_added = coalesce($5, total_stocks_added),
-    total_stocks_removed = coalesce($6, total_stocks_removed),
-    total_value = coalesce($7, total_value)
-WHERE id = $8
-RETURNING id, total_products, total_low_stock, total_out_of_stock, total_stocks_added, total_stocks_removed, total_users, total_value
+    total_stocks_added_value = coalesce($6, total_stocks_added_value),
+    total_stocks_removed = coalesce($7, total_stocks_removed),
+    total_stocks_removed_value = coalesce($8, total_stocks_removed_value),
+    total_value = coalesce($9, total_value)
+WHERE id = 1
+RETURNING id, total_users, total_products, total_low_stock, total_out_of_stock, total_stocks_added, total_stocks_added_value, total_stocks_removed, total_stocks_removed_value, total_value
 `
 
 type UpdateStatsParams struct {
-	TotalUsers         pgtype.Int4    `json:"total_users"`
-	TotalProducts      pgtype.Int4    `json:"total_products"`
-	TotalLowStock      pgtype.Int4    `json:"total_low_stock"`
-	TotalOutOfStock    pgtype.Int4    `json:"total_out_of_stock"`
-	TotalStocksAdded   pgtype.Int4    `json:"total_stocks_added"`
-	TotalStocksRemoved pgtype.Int4    `json:"total_stocks_removed"`
-	TotalValue         pgtype.Numeric `json:"total_value"`
-	ID                 int32          `json:"id"`
+	TotalUsers              pgtype.Int8    `json:"total_users"`
+	TotalProducts           pgtype.Int8    `json:"total_products"`
+	TotalLowStock           pgtype.Int8    `json:"total_low_stock"`
+	TotalOutOfStock         pgtype.Int8    `json:"total_out_of_stock"`
+	TotalStocksAdded        pgtype.Int8    `json:"total_stocks_added"`
+	TotalStocksAddedValue   pgtype.Numeric `json:"total_stocks_added_value"`
+	TotalStocksRemoved      pgtype.Int8    `json:"total_stocks_removed"`
+	TotalStocksRemovedValue pgtype.Numeric `json:"total_stocks_removed_value"`
+	TotalValue              pgtype.Numeric `json:"total_value"`
 }
 
 func (q *Queries) UpdateStats(ctx context.Context, arg UpdateStatsParams) (Stat, error) {
@@ -63,19 +87,22 @@ func (q *Queries) UpdateStats(ctx context.Context, arg UpdateStatsParams) (Stat,
 		arg.TotalLowStock,
 		arg.TotalOutOfStock,
 		arg.TotalStocksAdded,
+		arg.TotalStocksAddedValue,
 		arg.TotalStocksRemoved,
+		arg.TotalStocksRemovedValue,
 		arg.TotalValue,
-		arg.ID,
 	)
 	var i Stat
 	err := row.Scan(
 		&i.ID,
+		&i.TotalUsers,
 		&i.TotalProducts,
 		&i.TotalLowStock,
 		&i.TotalOutOfStock,
 		&i.TotalStocksAdded,
+		&i.TotalStocksAddedValue,
 		&i.TotalStocksRemoved,
-		&i.TotalUsers,
+		&i.TotalStocksRemovedValue,
 		&i.TotalValue,
 	)
 	return i, err

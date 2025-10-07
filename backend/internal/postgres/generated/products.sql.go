@@ -19,7 +19,7 @@ RETURNING id, name, description, price, stock, category, unit, low_stock_thresho
 `
 
 type AddStockParams struct {
-	Quantity int32 `json:"quantity"`
+	Quantity int64 `json:"quantity"`
 	ID       int64 `json:"id"`
 }
 
@@ -51,7 +51,7 @@ type CreateProductParams struct {
 	Name              string         `json:"name"`
 	Description       pgtype.Text    `json:"description"`
 	Price             pgtype.Numeric `json:"price"`
-	Stock             int32          `json:"stock"`
+	Stock             int64          `json:"stock"`
 	Category          string         `json:"category"`
 	Unit              string         `json:"unit"`
 	LowStockThreshold int32          `json:"low_stock_threshold"`
@@ -226,7 +226,7 @@ RETURNING id, name, description, price, stock, category, unit, low_stock_thresho
 `
 
 type RemoveStockParams struct {
-	Quantity int32 `json:"quantity"`
+	Quantity int64 `json:"quantity"`
 	ID       int64 `json:"id"`
 }
 

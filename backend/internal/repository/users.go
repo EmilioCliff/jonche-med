@@ -8,22 +8,22 @@ import (
 )
 
 type User struct {
-	ID          uint32
-	Name        string
-	Email       string
-	PhoneNumber string
-	Role        string
-	Password    string
-	Deleted     bool
-	CreatedAt   time.Time
+	ID          uint32    `json:"id"`
+	Name        string    `json:"name"`
+	Email       string    `json:"email"`
+	PhoneNumber string    `json:"phone_number"`
+	Role        string    `json:"role"`
+	Deleted     bool      `json:"deleted"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 type UserUpdate struct {
-	Name        *string
-	Email       *string
-	PhoneNumber *string
-	Role        *string
-	Password    *string
+	Name         *string `json:"name"`
+	Email        *string `json:"email"`
+	PhoneNumber  *string `json:"phone_number"`
+	Role         *string `json:"role"`
+	Password     *string `json:"password"`
+	RefreshToken *string `json:"refresh_token"`
 }
 
 type UserFilter struct {
@@ -33,10 +33,12 @@ type UserFilter struct {
 }
 
 type UserRepository interface {
-	Create(ctx context.Context, user *User) (*User, error)
-	GetByID(ctx context.Context, id uint32) (*User, error)
+	Create(ctx context.Context, user *User, defaultPassword string) (*User, error)
+	GetByID(ctx context.Context, id int64) (*User, error)
 	GetByEmail(ctx context.Context, email string) (*User, error)
-	Update(ctx context.Context, id uint32, userUpdate *UserUpdate) (*User, error)
-	Delete(ctx context.Context, id uint32) error
+	Update(ctx context.Context, id int64, userUpdate *UserUpdate) (*User, error)
+	Delete(ctx context.Context, id int64) error
 	List(ctx context.Context, filter *UserFilter) ([]*User, *pkg.Pagination, error)
+
+	GetUserInternalByEmail(ctx context.Context, email string) (*User, string, string, error)
 }

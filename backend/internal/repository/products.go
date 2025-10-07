@@ -2,30 +2,31 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/EmilioCliff/jonche-med/pkg"
 )
 
 type Product struct {
-	ID                uint32
-	Name              string
-	Description       string
-	Price             float64
-	Stock             int64
-	Category          string
-	Unit              string
-	LowStockThreshold int64
-	Deleted           bool
-	CreatedAt         string
+	ID                uint32    `json:"id"`
+	Name              string    `json:"name"`
+	Description       string    `json:"description"`
+	Price             float64   `json:"price"`
+	Stock             int64     `json:"stock"`
+	Category          string    `json:"category"`
+	Unit              string    `json:"unit"`
+	LowStockThreshold int32     `json:"low_stock_threshold"`
+	Deleted           bool      `json:"deleted"`
+	CreatedAt         time.Time `json:"created_at"`
 }
 
 type ProductUpdate struct {
-	Name              *string
-	Description       *string
-	Price             *float64
-	Category          *string
-	Unit              *string
-	LowStockThreshold *int64
+	Name              *string  `json:"name"`
+	Description       *string  `json:"description"`
+	Price             *float64 `json:"price"`
+	Category          *string  `json:"category"`
+	Unit              *string  `json:"unit"`
+	LowStockThreshold *int32   `json:"low_stock_threshold"`
 }
 
 type ProductStockUpdate struct {
@@ -48,8 +49,8 @@ type ProductRepository interface {
 	List(ctx context.Context, filter *ProductFilter) ([]*Product, *pkg.Pagination, error)
 
 	// For stock movements
-	AddStock(ctx context.Context, id int64, amount int64) (*Product, error)
-	RemoveStock(ctx context.Context, id int64, amount int64) (*Product, error)
+	AddStock(ctx context.Context, data *ProductStockUpdate) (*Product, error)
+	RemoveStock(ctx context.Context, data *ProductStockUpdate) (*Product, error)
 	ListMovements(ctx context.Context, filter *MovementFilter) ([]*Movement, *pkg.Pagination, error)
 
 	// Stats

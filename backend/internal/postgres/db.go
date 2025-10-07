@@ -20,7 +20,7 @@ type PostgresRepo struct {
 
 func NewPostgresRepo(store *Store) *PostgresRepo {
 	return &PostgresRepo{
-		UserRepository:     NewUserRepository(generated.New(store.pool)),
+		UserRepository:     NewUserRepository(store),
 		ProductsRepository: NewProductRepository(store),
 	}
 }
@@ -89,7 +89,7 @@ func (s *Store) ExecTx(ctx context.Context, fn func(q *generated.Queries) error)
 			return pkg.Errorf(pkg.INTERNAL_ERROR, "tx err: %v, rb err: %v", err, rbErr)
 		}
 
-		return pkg.Errorf(pkg.INTERNAL_ERROR, "tx err: %v", err)
+		return err
 	}
 
 	return tx.Commit(ctx)

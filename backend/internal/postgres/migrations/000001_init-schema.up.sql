@@ -3,8 +3,9 @@ CREATE TABLE "users" (
     "name" varchar(100) NOT NULL,
     "email" varchar(50) UNIQUE NOT NULL,
     "phone_number" varchar(50) UNIQUE NOT NULL,
-    "role" varchar(50) NOT NULL,
+    "role" varchar(50) NOT NULL CHECK (role IN ('admin', 'staff')),
     "password" varchar(255) NOT NULL,
+    "refresh_token" text,
     "deleted" boolean NOT NULL DEFAULT false,
     "created_at" timestamptz NOT NULL DEFAULT (now())
 );
@@ -14,7 +15,7 @@ CREATE TABLE "products" (
     "name" varchar(100) NOT NULL,
     "description" text,
     "price" numeric(10,2) NOT NULL,
-    "stock" integer NOT NULL,
+    "stock" bigint NOT NULL,
     "category" varchar(50) NOT NULL,
     "unit" varchar(50) NOT NULL,
     "low_stock_threshold" integer NOT NULL DEFAULT 10,
@@ -38,12 +39,14 @@ CREATE TABLE "movements" (
 
 CREATE TABLE "stats" (
     "id" integer PRIMARY KEY,
-    "total_products" integer NOT NULL DEFAULT 0,
-    "total_low_stock" integer NOT NULL DEFAULT 0,
-    "total_out_of_stock" integer NOT NULL DEFAULT 0,
-    "total_stocks_added" integer NOT NULL DEFAULT 0,
-    "total_stocks_removed" integer NOT NULL DEFAULT 0,
-    "total_users" integer NOT NULL DEFAULT 0,
+    "total_users" bigint NOT NULL DEFAULT 0,
+    "total_products" bigint NOT NULL DEFAULT 0,
+    "total_low_stock" bigint NOT NULL DEFAULT 0,
+    "total_out_of_stock" bigint NOT NULL DEFAULT 0,
+    "total_stocks_added" bigint NOT NULL DEFAULT 0,
+    "total_stocks_added_value" numeric(10,2) NOT NULL DEFAULT 0,
+    "total_stocks_removed" bigint NOT NULL DEFAULT 0,
+    "total_stocks_removed_value" numeric(10,2) NOT NULL DEFAULT 0,
     "total_value" numeric(14,2) NOT NULL DEFAULT 0
 );
 

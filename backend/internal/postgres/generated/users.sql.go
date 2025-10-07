@@ -14,7 +14,7 @@ import (
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (name, email, phone_number, role, password)
 VALUES ($1, $2, $3, $4, $5)
-RETURNING id, name, email, phone_number, role, password, deleted, created_at
+RETURNING id, name, email, phone_number, role, password, refresh_token, deleted, created_at
 `
 
 type CreateUserParams struct {
@@ -41,6 +41,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.PhoneNumber,
 		&i.Role,
 		&i.Password,
+		&i.RefreshToken,
 		&i.Deleted,
 		&i.CreatedAt,
 	)
@@ -59,7 +60,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, name, email, phone_number, role, password, deleted, created_at FROM users WHERE email = $1 AND deleted = false
+SELECT id, name, email, phone_number, role, password, refresh_token, deleted, created_at FROM users WHERE email = $1 AND deleted = false
 `
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
@@ -72,6 +73,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.PhoneNumber,
 		&i.Role,
 		&i.Password,
+		&i.RefreshToken,
 		&i.Deleted,
 		&i.CreatedAt,
 	)
@@ -79,7 +81,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, name, email, phone_number, role, password, deleted, created_at FROM users WHERE id = $1 AND deleted = false
+SELECT id, name, email, phone_number, role, password, refresh_token, deleted, created_at FROM users WHERE id = $1 AND deleted = false
 `
 
 func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
@@ -92,6 +94,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.PhoneNumber,
 		&i.Role,
 		&i.Password,
+		&i.RefreshToken,
 		&i.Deleted,
 		&i.CreatedAt,
 	)
@@ -99,7 +102,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, name, email, phone_number, role, password, deleted, created_at FROM users
+SELECT id, name, email, phone_number, role, password, refresh_token, deleted, created_at FROM users
 WHERE 
     (
         COALESCE($1, '') = '' 
@@ -144,6 +147,7 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 			&i.PhoneNumber,
 			&i.Role,
 			&i.Password,
+			&i.RefreshToken,
 			&i.Deleted,
 			&i.CreatedAt,
 		); err != nil {
@@ -192,18 +196,20 @@ SET name = coalesce($1, name),
     email = coalesce($2, email),
     phone_number = coalesce($3, phone_number),
     role = coalesce($4, role),
-    password = coalesce($5, password)
-WHERE id = $6
-RETURNING id, name, email, phone_number, role, password, deleted, created_at
+    refresh_token = coalesce($5, refresh_token),
+    password = coalesce($6, password)
+WHERE id = $7
+RETURNING id, name, email, phone_number, role, password, refresh_token, deleted, created_at
 `
 
 type UpdateUserParams struct {
-	Name        pgtype.Text `json:"name"`
-	Email       pgtype.Text `json:"email"`
-	PhoneNumber pgtype.Text `json:"phone_number"`
-	Role        pgtype.Text `json:"role"`
-	Password    pgtype.Text `json:"password"`
-	ID          int64       `json:"id"`
+	Name         pgtype.Text `json:"name"`
+	Email        pgtype.Text `json:"email"`
+	PhoneNumber  pgtype.Text `json:"phone_number"`
+	Role         pgtype.Text `json:"role"`
+	RefreshToken pgtype.Text `json:"refresh_token"`
+	Password     pgtype.Text `json:"password"`
+	ID           int64       `json:"id"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
@@ -212,6 +218,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		arg.Email,
 		arg.PhoneNumber,
 		arg.Role,
+		arg.RefreshToken,
 		arg.Password,
 		arg.ID,
 	)
@@ -223,6 +230,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.PhoneNumber,
 		&i.Role,
 		&i.Password,
+		&i.RefreshToken,
 		&i.Deleted,
 		&i.CreatedAt,
 	)

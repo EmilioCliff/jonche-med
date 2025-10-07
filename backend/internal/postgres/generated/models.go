@@ -26,7 +26,7 @@ type Product struct {
 	Name              string         `json:"name"`
 	Description       pgtype.Text    `json:"description"`
 	Price             pgtype.Numeric `json:"price"`
-	Stock             int32          `json:"stock"`
+	Stock             int64          `json:"stock"`
 	Category          string         `json:"category"`
 	Unit              string         `json:"unit"`
 	LowStockThreshold int32          `json:"low_stock_threshold"`
@@ -35,23 +35,26 @@ type Product struct {
 }
 
 type Stat struct {
-	ID                 int32          `json:"id"`
-	TotalProducts      int32          `json:"total_products"`
-	TotalLowStock      int32          `json:"total_low_stock"`
-	TotalOutOfStock    int32          `json:"total_out_of_stock"`
-	TotalStocksAdded   int32          `json:"total_stocks_added"`
-	TotalStocksRemoved int32          `json:"total_stocks_removed"`
-	TotalUsers         int32          `json:"total_users"`
-	TotalValue         pgtype.Numeric `json:"total_value"`
+	ID                      int32          `json:"id"`
+	TotalUsers              int64          `json:"total_users"`
+	TotalProducts           int64          `json:"total_products"`
+	TotalLowStock           int64          `json:"total_low_stock"`
+	TotalOutOfStock         int64          `json:"total_out_of_stock"`
+	TotalStocksAdded        int64          `json:"total_stocks_added"`
+	TotalStocksAddedValue   pgtype.Numeric `json:"total_stocks_added_value"`
+	TotalStocksRemoved      int64          `json:"total_stocks_removed"`
+	TotalStocksRemovedValue pgtype.Numeric `json:"total_stocks_removed_value"`
+	TotalValue              pgtype.Numeric `json:"total_value"`
 }
 
 type User struct {
-	ID          int64     `json:"id"`
-	Name        string    `json:"name"`
-	Email       string    `json:"email"`
-	PhoneNumber string    `json:"phone_number"`
-	Role        string    `json:"role"`
-	Password    string    `json:"password"`
-	Deleted     bool      `json:"deleted"`
-	CreatedAt   time.Time `json:"created_at"`
+	ID           int64       `json:"id"`
+	Name         string      `json:"name"`
+	Email        string      `json:"email"`
+	PhoneNumber  string      `json:"phone_number"`
+	Role         string      `json:"role"`
+	Password     string      `json:"password"`
+	RefreshToken pgtype.Text `json:"refresh_token"`
+	Deleted      bool        `json:"deleted"`
+	CreatedAt    time.Time   `json:"created_at"`
 }

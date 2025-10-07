@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"strings"
 
@@ -77,13 +78,14 @@ func redisCacheMiddleware(cache services.CacheService) gin.HandlerFunc {
 		cacheKey := constructCacheKey(requestPath, queryParams)
 
 		var target any
-
 		exists, _ := cache.Get(ctx, cacheKey, &target)
 		if exists {
+			log.Println("cache hit for key:", cacheKey)
 			ctx.AbortWithStatusJSON(http.StatusOK, target)
 
 			return
 		}
+		log.Println("cache miss for key:", cacheKey)
 
 		ctx.Next()
 	}
