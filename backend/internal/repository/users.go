@@ -7,6 +7,11 @@ import (
 	"github.com/EmilioCliff/jonche-med/pkg"
 )
 
+const (
+	ADMIN_ROLE = "admin"
+	STAFF_ROLE = "staff"
+)
+
 type User struct {
 	ID          uint32    `json:"id"`
 	Name        string    `json:"name"`

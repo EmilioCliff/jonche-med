@@ -15,17 +15,20 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteProduct(ctx context.Context, id int64) error
 	DeleteUser(ctx context.Context, id int64) error
+	GetDashboardData(ctx context.Context) ([]byte, error)
 	GetMovementByID(ctx context.Context, id int64) (Movement, error)
 	GetProductByID(ctx context.Context, id int64) (Product, error)
 	GetStats(ctx context.Context) (Stat, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
+	GetWeeklySales(ctx context.Context) ([]GetWeeklySalesRow, error)
 	ListMovements(ctx context.Context, arg ListMovementsParams) ([]ListMovementsRow, error)
 	ListMovementsCount(ctx context.Context, arg ListMovementsCountParams) (int64, error)
 	ListProducts(ctx context.Context, arg ListProductsParams) ([]Product, error)
 	ListProductsCount(ctx context.Context, arg ListProductsCountParams) (int64, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
 	ListUsersCount(ctx context.Context, arg ListUsersCountParams) (int64, error)
+	ProductHelpers(ctx context.Context) ([]ProductHelpersRow, error)
 	RecalculateStatsStock(ctx context.Context) error
 	RemoveStock(ctx context.Context, arg RemoveStockParams) (Product, error)
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)

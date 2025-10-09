@@ -34,6 +34,11 @@ UPDATE products
 SET deleted = true
 WHERE id = $1;
 
+-- name: ProductHelpers :many
+SELECT id, name FROM products
+WHERE deleted = false
+ORDER BY name;
+
 -- name: ListProducts :many
 SELECT * FROM products
 WHERE 

@@ -17,6 +17,7 @@ type Movement struct {
 	Quantity    int32     `json:"quantity"`
 	Price       float64   `json:"price"`
 	Type        string    `json:"type"`
+	BatchNumber *string   `json:"batch_number"`
 	Note        *string   `json:"note"`
 	PerformedBy uint32    `json:"performed_by"`
 	CreatedAt   time.Time `json:"created_at"`
@@ -27,9 +28,10 @@ type Movement struct {
 }
 
 type MovementFilter struct {
-	Pagination *pkg.Pagination
-	ProductID  *uint32
-	Type       *string
-	StartDate  *time.Time
-	EndDate    *time.Time
+	Pagination  *pkg.Pagination
+	ProductID   *uint32
+	Type        *string
+	BatchNumber *string
+	StartDate   *time.Time
+	EndDate     *time.Time
 }

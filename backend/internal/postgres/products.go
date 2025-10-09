@@ -2,6 +2,9 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
+	"encoding/json"
+	"errors"
 	"strings"
 
 	"github.com/EmilioCliff/jonche-med/internal/postgres/generated"
@@ -101,6 +104,18 @@ func (pr *ProductRepository) Create(ctx context.Context, product *repository.Pro
 		return nil
 	})
 	return product, err
+}
+
+func (pr *ProductRepository) GetByID(ctx context.Context, id int64) (*repository.Product, error) {
+	p, err := pr.queries.GetProductByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, pkg.Errorf(pkg.NOT_FOUND_ERROR, "product not found")
+		}
+		return nil, pkg.Errorf(pkg.INTERNAL_ERROR, "failed to get product: %s", err.Error())
+	}
+
+	return pgProductToRepoProduct(p), nil
 }
 
 func (pr *ProductRepository) Update(ctx context.Context, id int64, productUpdate *repository.ProductUpdate) (*repository.Product, error) {
@@ -241,11 +256,15 @@ func (pr *ProductRepository) AddStock(ctx context.Context, data *repository.Prod
 			Quantity:    int32(data.Quantity),
 			Price:       p.Price,
 			Type:        repository.MOVEMENT_ADD,
+			BatchNumber: pgtype.Text{Valid: false},
 			Note:        pgtype.Text{Valid: false},
 			PerformedBy: int64(data.PerformedBy),
 		}
 		if data.Note != nil {
 			movementParam.Note = pgtype.Text{String: *data.Note, Valid: true}
+		}
+		if data.BatchNumber != nil {
+			movementParam.BatchNumber = pgtype.Text{String: *data.BatchNumber, Valid: true}
 		}
 
 		_, err = q.CreateMovement(ctx, movementParam)
@@ -329,6 +348,7 @@ func (pr *ProductRepository) RemoveStock(ctx context.Context, data *repository.P
 			Quantity:    int32(data.Quantity),
 			Price:       p.Price,
 			Type:        repository.MOVEMENT_REMOVE,
+			BatchNumber: pgtype.Text{Valid: false},
 			Note:        pgtype.Text{Valid: false},
 			PerformedBy: int64(data.PerformedBy),
 		}
@@ -396,18 +416,20 @@ func (pr *ProductRepository) RemoveStock(ctx context.Context, data *repository.P
 
 func (pr *ProductRepository) ListMovements(ctx context.Context, filter *repository.MovementFilter) ([]*repository.Movement, *pkg.Pagination, error) {
 	listParams := generated.ListMovementsParams{
-		Limit:     int32(filter.Pagination.PageSize),
-		Offset:    pkg.Offset(filter.Pagination.Page, filter.Pagination.PageSize),
-		ProductID: pgtype.Int8{Valid: false},
-		Type:      pgtype.Text{Valid: false},
-		StartDate: pgtype.Timestamptz{Valid: false},
-		EndDate:   pgtype.Timestamptz{Valid: false},
+		Limit:       int32(filter.Pagination.PageSize),
+		Offset:      pkg.Offset(filter.Pagination.Page, filter.Pagination.PageSize),
+		ProductID:   pgtype.Int8{Valid: false},
+		Type:        pgtype.Text{Valid: false},
+		BatchNumber: pgtype.Text{Valid: false},
+		StartDate:   pgtype.Timestamptz{Valid: false},
+		EndDate:     pgtype.Timestamptz{Valid: false},
 	}
 	countParams := generated.ListMovementsCountParams{
-		ProductID: pgtype.Int8{Valid: false},
-		Type:      pgtype.Text{Valid: false},
-		StartDate: pgtype.Timestamptz{Valid: false},
-		EndDate:   pgtype.Timestamptz{Valid: false},
+		ProductID:   pgtype.Int8{Valid: false},
+		Type:        pgtype.Text{Valid: false},
+		BatchNumber: pgtype.Text{Valid: false},
+		StartDate:   pgtype.Timestamptz{Valid: false},
+		EndDate:     pgtype.Timestamptz{Valid: false},
 	}
 
 	if filter.ProductID != nil {
@@ -417,6 +439,10 @@ func (pr *ProductRepository) ListMovements(ctx context.Context, filter *reposito
 	if filter.Type != nil {
 		listParams.Type = pgtype.Text{String: *filter.Type, Valid: true}
 		countParams.Type = pgtype.Text{String: *filter.Type, Valid: true}
+	}
+	if filter.BatchNumber != nil {
+		listParams.BatchNumber = pgtype.Text{String: *filter.BatchNumber, Valid: true}
+		countParams.BatchNumber = pgtype.Text{String: *filter.BatchNumber, Valid: true}
 	}
 	if filter.StartDate != nil && filter.EndDate != nil {
 		listParams.StartDate = pgtype.Timestamptz{Time: *filter.StartDate, Valid: true}
@@ -478,6 +504,56 @@ func (pr *ProductRepository) GetStats(ctx context.Context) (*repository.Stats, e
 		TotalStockRemovedValue: pkg.PgTypeNumericToFloat64(stats.TotalStocksRemovedValue),
 		TotalValue:             pkg.PgTypeNumericToFloat64(stats.TotalValue),
 	}, nil
+}
+
+func (pr *ProductRepository) ProductFormHeper(ctx context.Context) (any, error) {
+	products, err := pr.queries.ProductHelpers(ctx)
+	if err != nil {
+		return nil, pkg.Errorf(pkg.INTERNAL_ERROR, "failed to get product helpers: %s", err.Error())
+	}
+
+	return products, nil
+}
+
+type DashboardData struct {
+	LowStock       []repository.Product  `json:"low_stock"`
+	RecentStockIn  []repository.Movement `json:"recent_stock_in"`
+	RecentStockOut []repository.Movement `json:"recent_stock_out"`
+}
+
+func (pr *ProductRepository) GetDashboardData(ctx context.Context) (map[string]any, error) {
+	recentActivity, err := pr.queries.GetDashboardData(ctx)
+	if err != nil {
+		return nil, pkg.Errorf(pkg.INTERNAL_ERROR, "failed to get dashboard data: %s", err.Error())
+	}
+
+	var recentActData DashboardData
+	if err := json.Unmarshal(recentActivity, &recentActData); err != nil {
+		return nil, pkg.Errorf(pkg.INTERNAL_ERROR, "failed to unmarshal dashboard data: %s", err.Error())
+	}
+
+	weeklyAggr, err := pr.queries.GetWeeklySales(ctx)
+	if err != nil {
+		return nil, pkg.Errorf(pkg.INTERNAL_ERROR, "failed to get weekly stock aggregation: %s", err.Error())
+	}
+
+	stats, err := pr.queries.GetStats(ctx)
+	if err != nil {
+		return nil, pkg.Errorf(pkg.INTERNAL_ERROR, "failed to get stats: %s", err.Error())
+	}
+
+	result := map[string]any{
+		"stock_value":        stats.TotalValue,
+		"total_products":     stats.TotalProducts,
+		"total_low_stock":    stats.TotalLowStock,
+		"total_out_of_stock": stats.TotalOutOfStock,
+		"low_stock":          recentActData.LowStock,
+		"recent_stock_in":    recentActData.RecentStockIn,
+		"recent_stock_out":   recentActData.RecentStockOut,
+		"weekly_aggr":        weeklyAggr,
+	}
+
+	return result, nil
 }
 
 func updateStatsHelper(

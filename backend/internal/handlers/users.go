@@ -99,13 +99,13 @@ func (s *Server) updateUserHandler(ctx *gin.Context) {
 	}
 	payload := authPayload.(*pkg.Payload)
 
-	if payload.UserID != uint32(id) && payload.Role != "admin" {
+	if payload.UserID != uint32(id) && payload.Role != repository.ADMIN_ROLE {
 		ctx.JSON(http.StatusForbidden, errorResponse(pkg.Errorf(pkg.FORBIDDEN_ERROR, "users can only update their own profile")))
 		return
 	}
 
-	if req.Role != nil && payload.Role != "admin" {
-		ctx.JSON(http.StatusForbidden, errorResponse(pkg.Errorf(pkg.FORBIDDEN_ERROR, "only admin users can update other users")))
+	if req.Role != nil && payload.Role != repository.ADMIN_ROLE && *req.Role != payload.Role {
+		ctx.JSON(http.StatusForbidden, errorResponse(pkg.Errorf(pkg.FORBIDDEN_ERROR, "only admin users can update other users roles")))
 		return
 	}
 
@@ -233,6 +233,8 @@ func (s *Server) listUsersHandler(ctx *gin.Context) {
 			Page:     uint32(pageNo),
 			PageSize: uint32(pageSize),
 		},
+		Search: nil,
+		Role:   nil,
 	}
 
 	if search := ctx.Query("search"); search != "" {
@@ -317,7 +319,7 @@ func (s *Server) logoutUserHandler(ctx *gin.Context) {
 func (s *Server) refreshTokenHandler(ctx *gin.Context) {
 	refreshToken, err := ctx.Cookie("refreshToken")
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(pkg.Errorf(pkg.INVALID_ERROR, "missing refresh token cookie")))
+		ctx.JSON(http.StatusUnauthorized, errorResponse(pkg.Errorf(pkg.INVALID_ERROR, "missing refresh token cookie")))
 		return
 	}
 

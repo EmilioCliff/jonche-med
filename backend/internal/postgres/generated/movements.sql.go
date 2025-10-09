@@ -13,9 +13,9 @@ import (
 )
 
 const createMovement = `-- name: CreateMovement :one
-INSERT INTO movements (product_id, quantity, price, type, note, performed_by)
-VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, product_id, quantity, price, type, note, performed_by, created_at
+INSERT INTO movements (product_id, quantity, price, type, note, batch_number, performed_by)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING id, product_id, quantity, price, type, note, batch_number, performed_by, created_at
 `
 
 type CreateMovementParams struct {
@@ -24,6 +24,7 @@ type CreateMovementParams struct {
 	Price       pgtype.Numeric `json:"price"`
 	Type        string         `json:"type"`
 	Note        pgtype.Text    `json:"note"`
+	BatchNumber pgtype.Text    `json:"batch_number"`
 	PerformedBy int64          `json:"performed_by"`
 }
 
@@ -34,6 +35,7 @@ func (q *Queries) CreateMovement(ctx context.Context, arg CreateMovementParams) 
 		arg.Price,
 		arg.Type,
 		arg.Note,
+		arg.BatchNumber,
 		arg.PerformedBy,
 	)
 	var i Movement
@@ -44,6 +46,7 @@ func (q *Queries) CreateMovement(ctx context.Context, arg CreateMovementParams) 
 		&i.Price,
 		&i.Type,
 		&i.Note,
+		&i.BatchNumber,
 		&i.PerformedBy,
 		&i.CreatedAt,
 	)
@@ -51,7 +54,7 @@ func (q *Queries) CreateMovement(ctx context.Context, arg CreateMovementParams) 
 }
 
 const getMovementByID = `-- name: GetMovementByID :one
-SELECT id, product_id, quantity, price, type, note, performed_by, created_at FROM movements WHERE id = $1
+SELECT id, product_id, quantity, price, type, note, batch_number, performed_by, created_at FROM movements WHERE id = $1
 `
 
 func (q *Queries) GetMovementByID(ctx context.Context, id int64) (Movement, error) {
@@ -64,6 +67,7 @@ func (q *Queries) GetMovementByID(ctx context.Context, id int64) (Movement, erro
 		&i.Price,
 		&i.Type,
 		&i.Note,
+		&i.BatchNumber,
 		&i.PerformedBy,
 		&i.CreatedAt,
 	)
@@ -72,7 +76,7 @@ func (q *Queries) GetMovementByID(ctx context.Context, id int64) (Movement, erro
 
 const listMovements = `-- name: ListMovements :many
 SELECT 
-    m.id, m.product_id, m.quantity, m.price, m.type, m.note, m.performed_by, m.created_at,
+    m.id, m.product_id, m.quantity, m.price, m.type, m.note, m.batch_number, m.performed_by, m.created_at,
     p.name AS product_name,
     u.name AS user_name
 FROM movements AS m
@@ -88,21 +92,26 @@ WHERE
         OR m.type = $2
     )
     AND (
-        $3::timestamptz IS NULL
-        OR m.created_at BETWEEN $3::timestamptz 
-            AND COALESCE($4::timestamptz, now())
+        $3::text IS NULL 
+        OR m.batch_number = $3
+    )
+    AND (
+        $4::timestamptz IS NULL
+        OR m.created_at BETWEEN $4::timestamptz 
+            AND COALESCE($5::timestamptz, now())
     )
 ORDER BY m.created_at DESC
-LIMIT $6 OFFSET $5
+LIMIT $7 OFFSET $6
 `
 
 type ListMovementsParams struct {
-	ProductID pgtype.Int8        `json:"product_id"`
-	Type      pgtype.Text        `json:"type"`
-	StartDate pgtype.Timestamptz `json:"start_date"`
-	EndDate   pgtype.Timestamptz `json:"end_date"`
-	Offset    int32              `json:"offset"`
-	Limit     int32              `json:"limit"`
+	ProductID   pgtype.Int8        `json:"product_id"`
+	Type        pgtype.Text        `json:"type"`
+	BatchNumber pgtype.Text        `json:"batch_number"`
+	StartDate   pgtype.Timestamptz `json:"start_date"`
+	EndDate     pgtype.Timestamptz `json:"end_date"`
+	Offset      int32              `json:"offset"`
+	Limit       int32              `json:"limit"`
 }
 
 type ListMovementsRow struct {
@@ -112,6 +121,7 @@ type ListMovementsRow struct {
 	Price       pgtype.Numeric `json:"price"`
 	Type        string         `json:"type"`
 	Note        pgtype.Text    `json:"note"`
+	BatchNumber pgtype.Text    `json:"batch_number"`
 	PerformedBy int64          `json:"performed_by"`
 	CreatedAt   time.Time      `json:"created_at"`
 	ProductName string         `json:"product_name"`
@@ -122,6 +132,7 @@ func (q *Queries) ListMovements(ctx context.Context, arg ListMovementsParams) ([
 	rows, err := q.db.Query(ctx, listMovements,
 		arg.ProductID,
 		arg.Type,
+		arg.BatchNumber,
 		arg.StartDate,
 		arg.EndDate,
 		arg.Offset,
@@ -141,6 +152,7 @@ func (q *Queries) ListMovements(ctx context.Context, arg ListMovementsParams) ([
 			&i.Price,
 			&i.Type,
 			&i.Note,
+			&i.BatchNumber,
 			&i.PerformedBy,
 			&i.CreatedAt,
 			&i.ProductName,
@@ -169,22 +181,28 @@ WHERE
         OR type = $2
     )
     AND (
-        $3::timestamptz IS NULL
-        OR created_at BETWEEN $3::timestamptz AND COALESCE($4::timestamptz, now())
+        $3::text IS NULL 
+        OR batch_number = $3
+    )
+    AND (
+        $4::timestamptz IS NULL
+        OR created_at BETWEEN $4::timestamptz AND COALESCE($5::timestamptz, now())
     )
 `
 
 type ListMovementsCountParams struct {
-	ProductID pgtype.Int8        `json:"product_id"`
-	Type      pgtype.Text        `json:"type"`
-	StartDate pgtype.Timestamptz `json:"start_date"`
-	EndDate   pgtype.Timestamptz `json:"end_date"`
+	ProductID   pgtype.Int8        `json:"product_id"`
+	Type        pgtype.Text        `json:"type"`
+	BatchNumber pgtype.Text        `json:"batch_number"`
+	StartDate   pgtype.Timestamptz `json:"start_date"`
+	EndDate     pgtype.Timestamptz `json:"end_date"`
 }
 
 func (q *Queries) ListMovementsCount(ctx context.Context, arg ListMovementsCountParams) (int64, error) {
 	row := q.db.QueryRow(ctx, listMovementsCount,
 		arg.ProductID,
 		arg.Type,
+		arg.BatchNumber,
 		arg.StartDate,
 		arg.EndDate,
 	)

@@ -34,6 +34,7 @@ type ProductStockUpdate struct {
 	PerformedBy uint32
 	Quantity    int64
 	Note        *string
+	BatchNumber *string
 }
 
 type ProductFilter struct {
@@ -44,6 +45,7 @@ type ProductFilter struct {
 
 type ProductRepository interface {
 	Create(ctx context.Context, product *Product) (*Product, error)
+	GetByID(ctx context.Context, id int64) (*Product, error)
 	Update(ctx context.Context, id int64, productUpdate *ProductUpdate) (*Product, error)
 	Delete(ctx context.Context, id int64) error
 	List(ctx context.Context, filter *ProductFilter) ([]*Product, *pkg.Pagination, error)
@@ -55,4 +57,6 @@ type ProductRepository interface {
 
 	// Stats
 	GetStats(ctx context.Context) (*Stats, error)
+	ProductFormHeper(ctx context.Context) (any, error)
+	GetDashboardData(ctx context.Context) (map[string]any, error)
 }

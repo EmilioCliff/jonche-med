@@ -79,18 +79,21 @@ func (s *Server) setUpRoutes() {
 	v1.POST("/users/login", s.loginUserHandler)
 	v1.GET("/users/logout", s.logoutUserHandler)
 	v1.GET("/users/refresh-token", s.refreshTokenHandler)
-	authRoute.POST("/users/:id/change-password", s.changePasswordHandler)
+	authRoute.PUT("/users/:id/change-password", s.changePasswordHandler)
 
 	// products routes
 	authRoute.POST("/products", s.createProductHandler)
+	cacheRoute.GET("/products/:id", s.getProductHandler)
 	authRoute.PUT("/products/:id", s.updateProductHandler)
 	authRoute.DELETE("/products/:id", s.deleteProductHandler)
 	cacheRoute.GET("/products", s.listProductsHandler)
+	cacheRoute.GET("/products/form", s.productFormHelperHandler)
 
 	authRoute.POST("/products/:id/add-stock", s.addProductStockHandler)
 	authRoute.POST("/products/:id/remove-stock", s.removeProductStockHandler)
 	cacheRoute.GET("/products/movements", s.listProductMovementsHandler)
 	cacheRoute.GET("/stats", s.getStatsHandler)
+	cacheRoute.GET("/dashboard", s.GetDashboardData)
 
 	// reports routes
 

@@ -1,6 +1,6 @@
 -- name: CreateMovement :one
-INSERT INTO movements (product_id, quantity, price, type, note, performed_by)
-VALUES ($1, $2, $3, $4, $5, $6)
+INSERT INTO movements (product_id, quantity, price, type, note, batch_number, performed_by)
+VALUES (sqlc.arg('product_id'), sqlc.arg('quantity'), sqlc.arg('price'), sqlc.arg('type'), sqlc.arg('note'), sqlc.narg('batch_number'), sqlc.arg('performed_by'))
 RETURNING *;
 
 -- name: GetMovementByID :one
@@ -24,6 +24,10 @@ WHERE
         OR m.type = sqlc.narg('type')
     )
     AND (
+        sqlc.narg('batch_number')::text IS NULL 
+        OR m.batch_number = sqlc.narg('batch_number')
+    )
+    AND (
         sqlc.narg('start_date')::timestamptz IS NULL
         OR m.created_at BETWEEN sqlc.narg('start_date')::timestamptz 
             AND COALESCE(sqlc.narg('end_date')::timestamptz, now())
@@ -42,6 +46,10 @@ WHERE
     AND (
         sqlc.narg('type')::text IS NULL 
         OR type = sqlc.narg('type')
+    )
+    AND (
+        sqlc.narg('batch_number')::text IS NULL 
+        OR batch_number = sqlc.narg('batch_number')
     )
     AND (
         sqlc.narg('start_date')::timestamptz IS NULL

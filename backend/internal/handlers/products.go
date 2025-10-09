@@ -47,6 +47,22 @@ func (s *Server) createProductHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"data": createdProduct})
 }
 
+func (s *Server) getProductHandler(ctx *gin.Context) {
+	id, err := pkg.StringToInt64(ctx.Param("id"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(pkg.Errorf(pkg.INVALID_ERROR, "invalid product ID: %s", err.Error())))
+		return
+	}
+
+	product, err := s.repo.ProductsRepository.GetByID(ctx, id)
+	if err != nil {
+		ctx.JSON(pkg.ErrorToStatusCode(err), errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"data": product})
+}
+
 func (s *Server) updateProductHandler(ctx *gin.Context) {
 	id, err := pkg.StringToInt64(ctx.Param("id"))
 	if err != nil {
@@ -135,8 +151,9 @@ func (s *Server) listProductsHandler(ctx *gin.Context) {
 }
 
 type stockUpdateRequest struct {
-	Quantity int64   `json:"quantity" binding:"required,gt=0"`
-	Note     *string `json:"note"`
+	Quantity    int64   `json:"quantity" binding:"required,gt=0"`
+	Note        *string `json:"note"`
+	BatchNumber *string `json:"batch_number"`
 }
 
 func (s *Server) addProductStockHandler(ctx *gin.Context) {
@@ -165,6 +182,7 @@ func (s *Server) addProductStockHandler(ctx *gin.Context) {
 		PerformedBy: payload.UserID,
 		Quantity:    req.Quantity,
 		Note:        req.Note,
+		BatchNumber: req.BatchNumber,
 	}
 
 	updatedProduct, err := s.repo.ProductsRepository.AddStock(ctx, data)
@@ -239,10 +257,11 @@ func (s *Server) listProductMovementsHandler(ctx *gin.Context) {
 			Page:     uint32(pageNo),
 			PageSize: uint32(pageSize),
 		},
-		ProductID: nil,
-		Type:      nil,
-		StartDate: nil,
-		EndDate:   nil,
+		ProductID:   nil,
+		Type:        nil,
+		BatchNumber: nil,
+		StartDate:   nil,
+		EndDate:     nil,
 	}
 
 	if productIDStr := ctx.Query("product_id"); productIDStr != "" {
@@ -257,7 +276,15 @@ func (s *Server) listProductMovementsHandler(ctx *gin.Context) {
 	}
 
 	if movementType := ctx.Query("type"); movementType != "" {
-		filter.Type = &movementType
+		if movementType == repository.MOVEMENT_ADD {
+			filter.Type = &movementType
+		} else if movementType == repository.MOVEMENT_REMOVE {
+			filter.Type = &movementType
+		}
+	}
+
+	if batchNumber := ctx.Query("batch_number"); batchNumber != "" {
+		filter.BatchNumber = &batchNumber
 	}
 
 	startDateStr := ctx.DefaultQuery("from", "01/01/2025")
@@ -276,6 +303,7 @@ func (s *Server) listProductMovementsHandler(ctx *gin.Context) {
 
 		return
 	}
+	endDate = endDate.Add(time.Hour * 24)
 	filter.EndDate = &endDate
 
 	movements, pagination, err := s.repo.ProductsRepository.ListMovements(ctx, filter)
@@ -298,4 +326,14 @@ func (s *Server) getStatsHandler(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"data": stats})
+}
+
+func (s *Server) productFormHelperHandler(ctx *gin.Context) {
+	helpers, err := s.repo.ProductsRepository.ProductFormHeper(ctx)
+	if err != nil {
+		ctx.JSON(pkg.ErrorToStatusCode(err), errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"data": helpers})
 }

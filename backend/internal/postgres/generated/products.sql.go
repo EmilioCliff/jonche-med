@@ -218,6 +218,37 @@ func (q *Queries) ListProductsCount(ctx context.Context, arg ListProductsCountPa
 	return total_products, err
 }
 
+const productHelpers = `-- name: ProductHelpers :many
+SELECT id, name FROM products
+WHERE deleted = false
+ORDER BY name
+`
+
+type ProductHelpersRow struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+}
+
+func (q *Queries) ProductHelpers(ctx context.Context) ([]ProductHelpersRow, error) {
+	rows, err := q.db.Query(ctx, productHelpers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ProductHelpersRow{}
+	for rows.Next() {
+		var i ProductHelpersRow
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const removeStock = `-- name: RemoveStock :one
 UPDATE products
 SET stock = stock - $1

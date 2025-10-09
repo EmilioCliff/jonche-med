@@ -28,8 +28,9 @@ CREATE TABLE "movements" (
     "product_id" bigint NOT NULL,
     "quantity" integer NOT NULL,
     "price" numeric(10,2) NOT NULL,
-    "type" varchar(50) NOT NULL,
+    "type" varchar(50) NOT NULL CHECK (type IN ('ADD', 'REMOVE')),
     "note" text,
+    "batch_number" varchar(100),
     "performed_by" bigint NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT (now()),
 

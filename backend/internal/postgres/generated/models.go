@@ -17,6 +17,7 @@ type Movement struct {
 	Price       pgtype.Numeric `json:"price"`
 	Type        string         `json:"type"`
 	Note        pgtype.Text    `json:"note"`
+	BatchNumber pgtype.Text    `json:"batch_number"`
 	PerformedBy int64          `json:"performed_by"`
 	CreatedAt   time.Time      `json:"created_at"`
 }
