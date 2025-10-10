@@ -161,33 +161,35 @@ export default function Dashboard() {
 					</CardHeader>
 					<CardContent>
 						<div className="space-y-3">
-							{dashboard?.low_stock.map((alert) => (
-								<div
-									key={alert.id}
-									className="flex items-center justify-between p-3 bg-muted rounded-lg"
-								>
-									<div>
-										<p className="font-medium">
-											{alert.name}
-										</p>
-										<p className="text-sm text-muted-foreground">
-											Current: {alert.stock} | Minimum:{' '}
-											{alert.low_stock_threshold}
-										</p>
-									</div>
-									<Badge
-										variant={
-											alert.stock === 0
-												? 'destructive'
-												: 'secondary'
-										}
+							{dashboard?.low_stock &&
+								dashboard.low_stock.map((alert) => (
+									<div
+										key={alert.id}
+										className="flex items-center justify-between p-3 bg-muted rounded-lg"
 									>
-										{alert.stock === 0
-											? 'Critical'
-											: 'Warning'}
-									</Badge>
-								</div>
-							))}
+										<div>
+											<p className="font-medium">
+												{alert.name}
+											</p>
+											<p className="text-sm text-muted-foreground">
+												Current: {alert.stock} |
+												Minimum:{' '}
+												{alert.low_stock_threshold}
+											</p>
+										</div>
+										<Badge
+											variant={
+												alert.stock === 0
+													? 'destructive'
+													: 'secondary'
+											}
+										>
+											{alert.stock === 0
+												? 'Critical'
+												: 'Warning'}
+										</Badge>
+									</div>
+								))}
 						</div>
 						<Link to="/products">
 							<Button
