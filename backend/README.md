@@ -1,85 +1,75 @@
+# ChemStock Backend
 
-# Ignite Project
-
-This project was created with [Ignite](https://github.com/emilio/ignite) — a CLI tool for bootstrapping Go-based applications with flexibility for various configurations.
+This is the backend for ChemStock, a modern pharmacy inventory management system built with Go. It provides RESTful APIs for inventory, products, users, reports, and statistics, using PostgreSQL for data storage.
 
 ## Table of Contents
 
-- [Getting Started](#getting-started)
-- [Available Commands](#available-commands)
-- [Project Structure](#project-structure)
-- [Configuration](#configuration)
-- [Collaboration](#collaboration)
+-   [Getting Started](#getting-started)
+-   [Available Commands](#available-commands)
+-   [Project Structure](#project-structure)
+-   [Configuration](#configuration)
+-   [Collaboration](#collaboration)
 
 ## Getting Started
 
-To start working with this project, clone the repository, navigate into the project directory, and run the following command to install dependencies:
+To start working with this project, clone the repository, navigate into the backend directory, and install dependencies:
 
 ```sh
 go mod tidy
+```
 
-# Make sure you have **Go** and **Git** installed on your system.
+Make sure you have **Go** and **PostgreSQL** installed on your system.
 
-# Running the Project
+### Running the Project
 
-After setting up the project, you can use the following command to start the server:
+After setting up, you can start the server:
+
 ```sh
+go run cmd/server/main.go
+```
 
 ## Available Commands
 
-In the project directory, you can run:
+In the backend directory, you can run:
 
 ```sh
-	make sqlc
-	make test
-	make race-test
-	```
+make sqlc        # Generate SQL code
+make test        # Run tests
+make race-test   # Run tests with race detector
+```
 
 ## Project Structure
 
-Ignite sets up a flexible folder structure based on hexagonal architecture and repository pattern:
-
-```sh
-	.envs                    # Environment configurations
-	cmd
-	├── server               # Server main entry point
-	└── cli                  # CLI main entry point (if CLI option selected)
-	gapi                     # gRPC generated files (if gRPC selected)
-	internal
-	├── handlers             # HTTP handler functions
-	├── gapi                 # gRPC service implementations
-	├── repository           # Data access layer
-	├── services             # Business logic layer
-	└── mysql/postgres       # Database-related files (queries, migrations, mocks)
-	pkg                      # Common utilities and helpers
-	.github/workflows        # CI configuration (if --withWorkflow selected)
-
-	```
+-   `cmd/server/` — Main server entry point
+-   `internal/handlers/` — HTTP handler functions
+-   `internal/repository/` — Data access layer
+-   `internal/services/` — Business logic
+-   `internal/postgres/` — Database queries, migrations, models
+-   `internal/reports/` — Report generation logic
+-   `pkg/` — Utilities and helpers
+-   `.envs/` — Environment configurations
 
 ## Configuration
 
-Project configurations are set in environment variables and configuration files:
+Project configurations are set in environment variables and config files:
 
-`.envs/.local/config.env` - for local environment configurations
-`.envs/configs/sqlc.yaml` - SQLC configuration for SQL code generation
-
-Adjust these files as needed for different environments.
+-   `.envs/.local/config.env` — Local environment config
+-   `.envs/configs/sqlc.yaml` — SQLC codegen config
 
 ## Collaboration
 
-We welcome contributions! If you want to add new features, improve the documentation, or fix bugs, please follow these steps:
+Contributions are welcome! To add features, improve docs, or fix bugs:
 
-1. **Fork the repository**: Create a personal copy of the repository to work on.
-2. **Create a new branch**: Develop your changes in a separate branch. For example, `feature/new-feature` or`bugfix/fix-issue`.
-3. **Commit your changes**: Make sure to write meaningful commit messages describing what your changes do.
-4. **Create a pull request**: Once your changes are ready, open a pull request to merge your branch into the main repository.
+1. Fork the repository
+2. Create a new branch (e.g. `feature/new-feature`)
+3. Commit your changes with clear messages
+4. Open a pull request
 
-### Features You Can Help Add:
+### Ways to Contribute
 
-- **New Commands**: If you'd like to add new subcommands to the CLI tool, feel free to submit an enhancement.
-- **Database Integrations**: We currently support SQL-based databases like PostgreSQL and MySQL. Contributions for other databases are welcome!
-- **Testing**: Help us write more tests for different use cases and improve test coverage.
-- **CI/CD Workflows**: If you have experience with CI/CD tools, improving the `GitHub Actions` workflow for continuous integration is a great way to contribute.
+-   Add new API endpoints or CLI commands
+-   Integrate new databases or improve queries
+-   Write more tests and improve coverage
+-   Enhance CI/CD workflows
 
-If you have an idea for a new feature or improvement, please open an issue or start a discussion. We'd love to hear your thoughts and collaborate!
-
+If you have ideas or suggestions, open an issue or start a discussion. We appreciate your input!
