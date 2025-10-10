@@ -194,48 +194,48 @@ export default function UserProfile() {
 							</form>
 						</Form>
 					) : (
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-							<div className="space-y-2">
-								<p className="text-sm text-muted-foreground">
-									Name
-								</p>
-								<p className="font-semibold text-lg">
-									{user?.name}
-								</p>
+						<div>
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<div className="space-y-2">
+									<p className="text-sm text-muted-foreground">
+										Name
+									</p>
+									<p className="font-semibold text-lg">
+										{user?.name}
+									</p>
+								</div>
+								<div className="space-y-2">
+									<p className="text-sm text-muted-foreground">
+										Email
+									</p>
+									<p className="font-semibold text-lg">
+										{user?.email}
+									</p>
+								</div>
+								<div className="space-y-2">
+									<p className="text-sm text-muted-foreground">
+										Phone
+									</p>
+									<p className="font-semibold text-lg">
+										{user?.phone_number}
+									</p>
+								</div>
+								<div className="space-y-2">
+									<p className="text-sm text-muted-foreground">
+										Role
+									</p>
+									<p className="font-semibold text-lg">
+										{user?.role}
+									</p>
+								</div>
 							</div>
-							<div className="space-y-2">
-								<p className="text-sm text-muted-foreground">
-									Email
-								</p>
-								<p className="font-semibold text-lg">
-									{user?.email}
-								</p>
-							</div>
-							<div className="space-y-2">
-								<p className="text-sm text-muted-foreground">
-									Phone
-								</p>
-								<p className="font-semibold text-lg">
-									{user?.phone_number}
-								</p>
-							</div>
-							<div className="space-y-2">
-								<p className="text-sm text-muted-foreground">
-									Role
-								</p>
-								<p className="font-semibold text-lg">
-									{user?.role}
-								</p>
-							</div>
-							<div className="flex justify-end mt-4 col-span-2">
-								<Button
-									variant="outline"
-									onClick={() => setIsEditMode(true)}
-									className="flex items-center gap-2 cursor-pointer"
-								>
-									<Pencil className="w-4 h-4" /> Edit Profile
-								</Button>
-							</div>
+							<Button
+								variant="outline"
+								onClick={() => setIsEditMode(true)}
+								className="flex items-center gap-2 cursor-pointer mt-4 ml-auto"
+							>
+								<Pencil className="w-4 h-4" /> Edit Profile
+							</Button>
 						</div>
 					)}
 				</CardContent>

@@ -178,6 +178,7 @@ export default function Transactions() {
 								placeholder="Search by batch number..."
 								value={searchTerm}
 								onChange={(e) => setSearchTerm(e.target.value)}
+								className="w-full"
 							/>
 						</div>
 						<div className="space-y-2">
@@ -188,7 +189,7 @@ export default function Transactions() {
 									setFilterProductId(Number(v))
 								}
 							>
-								<SelectTrigger className="w-full md:w-[200px]">
+								<SelectTrigger className="w-full">
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
@@ -209,7 +210,7 @@ export default function Transactions() {
 								value={filterType}
 								onValueChange={(v: any) => setFilterType(v)}
 							>
-								<SelectTrigger className="w-full md:w-[200px]">
+								<SelectTrigger className="w-full">
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
