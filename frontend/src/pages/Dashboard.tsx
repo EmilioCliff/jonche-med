@@ -162,6 +162,7 @@ export default function Dashboard() {
 					<CardContent>
 						<div className="space-y-3">
 							{dashboard?.low_stock &&
+							dashboard.low_stock.length > 0 ? (
 								dashboard.low_stock.map((alert) => (
 									<div
 										key={alert.id}
@@ -189,7 +190,12 @@ export default function Dashboard() {
 												: 'Warning'}
 										</Badge>
 									</div>
-								))}
+								))
+							) : (
+								<p className="text-sm text-muted-foreground text-center py-4">
+									No stock alerts
+								</p>
+							)}
 						</div>
 						<Link to="/products">
 							<Button
